@@ -1,0 +1,68 @@
+int green_led = 12;
+int buzz = 3;
+int red_led = 2;
+int gas_sensor = A0;
+int yellow_led = 7;
+
+float r = 500;
+float k = 4820;
+float n = -1.25;
+
+void setup(){
+  pinMode(green_led, OUTPUT);
+  pinMode(buzz, OUTPUT);
+  pinMode(red_led, OUTPUT);
+  pinMode(gas_sensor, INPUT);
+  pinMode(yellow_led, OUTPUT);
+  Serial.begin(9600);
+}
+
+void loop(){
+  gas_sensor_def();
+}
+
+void gas_sensor_def(){
+  int gas_sensor_read = analogRead(gas_sensor);
+  float volts = (float(gas_sensor_read) / 1023.0) * 5.0;
+  float rs = r * ((5.0 - volts) / volts);
+  float ppm = k * pow((rs / r), n);
+  Serial.print("Чтение датчика: ");
+  Serial.println(gas_sensor_read);
+  Serial.print("Значение PPM: ");
+  Serial.println(ppm);
+  delay(500);
+  if (ppm < 800) {
+  digitalWrite(red_led, LOW);
+  digitalWrite(yellow_led, LOW);
+  digitalWrite(green_led, HIGH);
+  stop_buzzer();
+  } 
+  else if (ppm >= 800 && ppm <= 1000) {
+  digitalWrite(red_led, LOW);
+  digitalWrite(green_led, LOW);
+  digitalWrite(yellow_led, HIGH);
+  stop_buzzer();
+  } 
+  else if (ppm > 1000) {
+  digitalWrite(yellow_led, LOW);
+  digitalWrite(green_led, LOW);
+  digitalWrite(red_led, HIGH);
+  buzzer();
+  }
+}
+void buzzer(){
+  tone(3, 147); delay(100); noTone(3); delay(50);
+  tone(3, 147); delay(100); noTone(3); delay(50);
+  tone(3, 294); delay(100); noTone(3); delay(210);
+  tone(3, 220); delay(100); noTone(3); delay(400);
+  tone(3, 208); delay(100); noTone(3); delay(210);
+  tone(3, 196); delay(100); noTone(3); delay(210);
+  tone(3, 175); delay(100); noTone(3); delay(210);
+  tone(3, 147); delay(100); noTone(3); delay(50);
+  tone(3, 175); delay(100); noTone(3); delay(50);
+  tone(3, 196); delay(100); noTone(3); delay(75);
+}
+
+void stop_buzzer(){
+  noTone(buzz);
+}
